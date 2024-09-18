@@ -12,7 +12,7 @@ import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway({
   cors: {
-    origin: 'http://localhost:5173',
+    origin: ['http://localhost:5173', 'http://localhost:5174'],
   },
 })
 export class ChatGateway
@@ -42,6 +42,7 @@ export class ChatGateway
 
   @SubscribeMessage('messageToRoom')
   handleMessageToRoom(client: Socket, payload: { room: string; message: string }) {
+    console.log('messageToRoom', payload, client.id);
     this.io.to(payload.room).emit('messageResponse', payload.message);
   }
 
@@ -82,12 +83,15 @@ export class ChatGateway
 
   @SubscribeMessage('joinRoom')
   handleJoinRoom(client: Socket, room: string) {
-    client.join('room_' + room);
-    this.logger.log(`Client id: ${client.id} joined room ${room}`);
-
-    // if the room is created, then send the list of rooms to all clients
-    if (!this.io.sockets.adapter.rooms.has(room)) {
+    if (this.io.sockets.adapter.rooms.has(room)) {
+      client.join(room);
+      this.io.to(room).emit('userJoined', { clientId: client.id, room: room });
+    } else {
+      const roomName = 'room_' + room;
+      client.join(roomName);
       this.io.emit('roomsList', this.getSharedRooms());
+      this.logger.log(`Client id: ${client.id} joined room ${roomName}`);
+      this.io.to(roomName).emit('userJoined', { clientId: client.id, room: roomName });
     }
   }
 

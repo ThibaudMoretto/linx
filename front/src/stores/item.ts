@@ -17,6 +17,10 @@ export const useItemStore = defineStore('item', {
       socket.on('item:created', (item) => {
         this.items.push(item)
       })
+
+      socket.on('userJoined', (data) => {
+        this.items.push(data.clientId)
+      })
     },
 
     createItem(label: string) {

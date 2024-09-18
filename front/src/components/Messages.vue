@@ -4,8 +4,6 @@ import { useItemStore } from '@/stores/item'
 
 const itemStore = useItemStore()
 socket.on('messageResponse', (data: any) => {
-  console.log('received', data)
-  // ad it to the items list
   itemStore.createItem(data)
 })
 </script>
