@@ -1,5 +1,5 @@
 <template>
-  <p>State: {{ connectionStore.isConnected }}</p>
+  <p>Connected: {{ connectionStore.isConnected }}</p>
 </template>
 
 <script lang="ts" setup>

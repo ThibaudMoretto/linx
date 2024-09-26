@@ -19,16 +19,20 @@ export class ChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   private readonly logger = new Logger(ChatGateway.name);
-
+  private readonly inactivityTimeout = 10000; // 10 secondes
+  private activeConnections: Map<string, { lastActivity: number }> = new Map();
   @WebSocketServer() io: Server;
 
   afterInit() {
     this.logger.log('Initialized');
+    setInterval(() => {
+      this.terminateInactiveConnections();
+    }, 1000000); // Exécute toutes les 1000 secondes
   }
 
   handleConnection(client: any) {
     const { sockets } = this.io.sockets;
-
+    this.activeConnections.set(client.id, { lastActivity: Date.now() });
     this.logger.log(`Client id: ${client.id} connected`);
     this.logger.debug(`Number of connected clients: ${sockets.size}`);
     this.logger.debug(`Number of rooms: ${this.io.sockets.adapter.rooms.size}`);
@@ -36,14 +40,20 @@ export class ChatGateway
 
   handleDisconnect(client: any) {
     this.logger.log(`Cliend id:${client.id} disconnected`);
-
+    this.activeConnections.delete(client.id);
     this.removeEmptyRooms();
   }
 
   @SubscribeMessage('messageToRoom')
-  handleMessageToRoom(client: Socket, payload: { room: string; message: string }) {
-    console.log('messageToRoom', payload, client.id);
-    this.io.to(payload.room).emit('messageResponse', payload.message);
+  handleMessageToRoom(
+    client: Socket,
+    payload: { room: string; message: string; author: string },
+  ) {
+    console.log('messageToRoom', payload);
+
+    this.io
+      .to(payload.room)
+      .emit('messageResponse', { label: payload.message, author: payload.author });
   }
 
   @SubscribeMessage('privateMessage')
@@ -101,5 +111,56 @@ export class ChatGateway
     client.join('room_' + room);
     this.logger.log(`Client id: ${client.id} created room ${room}`);
     this.io.emit('roomsList', this.getSharedRooms());
+  }
+
+  // get the number of connected users in a room
+  @SubscribeMessage('getNumberOfUsersInRoom')
+  handleGetNumberOfUsersInRoom(client: Socket, room: string) {
+    const roomName = 'room_' + room;
+    // only user which are not a room
+    const numberOfUsers = this.io.sockets.adapter.rooms.get(roomName)?.size;
+    console.log('numberOfUsersInRoom', numberOfUsers);
+    client.emit('numberOfUsersInRoom', numberOfUsers);
+  }
+
+  // get the number of connected users
+  @SubscribeMessage('getNumberOfUsers')
+  handleGetNumberOfUsers(client: Socket) {
+    const numberOfUsers = this.io.sockets.sockets.size;
+    // log their ids
+    console.log('numberOfUsers', this.io.sockets.sockets.keys());
+
+    client.emit('numberOfUsers', numberOfUsers);
+  }
+
+  @SubscribeMessage('terminateInactiveConnections')
+  handleTerminateInactiveConnections() {
+    this.terminateInactiveConnections();
+  }
+
+  private terminateInactiveConnections() {
+    const now = Date.now();
+    let terminatedCount = 0;
+
+    for (const [clientId, data] of this.activeConnections.entries()) {
+      if (now - data.lastActivity > this.inactivityTimeout) {
+        const socket = this.io.sockets.sockets.get(clientId);
+        if (socket) {
+          this.logger.log(`Terminating inactive connection: ${clientId}`);
+          socket.disconnect(true);
+          this.activeConnections.delete(clientId);
+          terminatedCount++;
+        }
+      }
+    }
+
+    this.logger.log(`Terminated ${terminatedCount} inactive connections`);
+    this.sendActiveUsersCount();
+  }
+
+  private sendActiveUsersCount() {
+    const count = this.activeConnections.size;
+    this.logger.log(`Active users: ${count}`);
+    this.io.emit('numberOfUsers', count);
   }
 }

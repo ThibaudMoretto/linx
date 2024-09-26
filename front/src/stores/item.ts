@@ -1,9 +1,20 @@
 import { defineStore } from 'pinia'
 import { socket } from '@/socket'
 
+enum ItemType {
+  USER_JOINED = 'userJoined',
+  MESSAGE = 'message'
+}
+
 export const useItemStore = defineStore('item', {
   state: () => ({
-    items: [] as { id: number; label: string }[]
+    items: [] as {
+      id: number
+      label: string
+      author: string
+      timestamp: number
+      type: ItemType
+    }[]
   }),
 
   actions: {
@@ -19,20 +30,30 @@ export const useItemStore = defineStore('item', {
       })
 
       socket.on('userJoined', (data) => {
-        this.items.push(data.clientId)
+        this.items.push({
+          id: Date.now(),
+          label: `${data.clientId} has joined the room`,
+          author: data.clientId,
+          timestamp: Date.now(),
+          type: ItemType.USER_JOINED
+        })
       })
     },
 
-    createItem(label: string) {
+    createItem({ label, author }: { label: string; author: string }) {
       const item = {
-        id: Date.now(), // temporary ID for v-for key
-        label
+        id: Date.now(),
+        label,
+        author,
+        timestamp: Date.now(),
+        type: ItemType.MESSAGE
       }
       this.items.push(item)
+      console.log('Items after push:', this.items)
+    },
 
-      socket.emit('item:create', { label }, (res: any) => {
-        item.id = res.data
-      })
+    deleteAllItems() {
+      this.items = []
     }
   }
 })

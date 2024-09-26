@@ -1,8 +1,10 @@
 import { defineStore } from 'pinia'
 
-export const useUsersStore = defineStore('user', {
+export const useUsersStore = defineStore('users', {
   state: () => ({
+    username: '',
     currentRoom: '',
+    clientId: '',
     totalUsers: 0
   }),
   getters: {
@@ -13,6 +15,15 @@ export const useUsersStore = defineStore('user', {
   actions: {
     setCurrentRoom(room: string) {
       this.currentRoom = room
+    },
+    setTotalUsers(totalUsers: number) {
+      this.totalUsers = totalUsers
+    },
+    setUsername(username: string) {
+      this.username = username
+    },
+    setClientId(id: string) {
+      this.clientId = id
     }
   }
 })
