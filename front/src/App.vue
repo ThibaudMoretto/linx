@@ -1,32 +1,25 @@
 <script setup lang="ts">
-import { ref, provide } from 'vue'
+import { provide } from 'vue'
 import { socket } from './socket'
-import { useUsersStore } from './stores/users'
-import Landing from './components/Landing.vue'
-import LoginModal from './components/LoginModal.vue'
+import { useRouter } from 'vue-router'
 
-const userStore = useUsersStore()
-
-const isLoggedIn = ref(false)
-
-const handleLogin = (username: string) => {
-  userStore.setUsername(username)
-  userStore.setClientId(socket.id || '')
-  isLoggedIn.value = true
-  socket.emit('setUsername', username)
-}
+const router = useRouter()
 
 provide('socket', socket)
+
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('token')
+  if (to.matched.some((record) => record.meta.requiresAuth) && !token) {
+    next('/login')
+  } else {
+    next()
+  }
+})
 </script>
 
 <template>
   <div class="app-container">
-    <LoginModal v-if="!isLoggedIn" @login="handleLogin" />
-    <template v-else>
-      <div class="app-content">
-        <Landing />
-      </div>
-    </template>
+    <router-view />
   </div>
 </template>
 

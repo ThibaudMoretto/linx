@@ -1,8 +1,6 @@
 import './assets/main.css'
 import PrimeVue from 'primevue/config'
 import Aura from '@primevue/themes/aura'
-import Lara from '@primevue/themes/lara'
-import Nora from '@primevue/themes/nora'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'

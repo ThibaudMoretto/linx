@@ -31,25 +31,26 @@ const isUserJoinedMessage = (item: any) => item.type === 'userJoined'
 
 <template>
   <div class="messages-container">
-    <div
-      v-if="items.length"
-      v-for="item in items"
-      :key="item.id"
-      :class="{
-        'message-wrapper': !isUserJoinedMessage(item),
-        'own-message': isOwnMessage(item.author),
-        'info-message': isUserJoinedMessage(item)
-      }"
-    >
-      <div v-if="isUserJoinedMessage(item)" class="info-bubble">
-        {{ item.label }}
-      </div>
-      <div v-else class="message-bubble">
-        <div class="message-username" v-if="!isOwnMessage(item.author)">
-          {{ item.author }}
+    <div v-if="items.length">
+      <div
+        v-for="item in items"
+        :key="item.id"
+        :class="{
+          'message-wrapper': !isUserJoinedMessage(item),
+          'own-message': isOwnMessage(item.author),
+          'info-message': isUserJoinedMessage(item)
+        }"
+      >
+        <div v-if="isUserJoinedMessage(item)" class="info-bubble">
+          {{ item.label }}
         </div>
-        <div class="message-content">{{ item.label }}</div>
-        <div class="message-timestamp">{{ new Date(item.timestamp).toLocaleTimeString() }}</div>
+        <div v-else class="message-bubble">
+          <div class="message-username" v-if="!isOwnMessage(item.author)">
+            {{ item.author }}
+          </div>
+          <div class="message-content">{{ item.label }}</div>
+          <div class="message-timestamp">{{ new Date(item.timestamp).toLocaleTimeString() }}</div>
+        </div>
       </div>
     </div>
     <div v-else class="no-messages">No messages yet</div>
