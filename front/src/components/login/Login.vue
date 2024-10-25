@@ -16,6 +16,8 @@ const login = async () => {
       username: username.value,
       password: password.value
     })
+    console.log(response)
+
     localStorage.setItem('token', response.data.access_token)
     router.push('/')
   } catch (error) {

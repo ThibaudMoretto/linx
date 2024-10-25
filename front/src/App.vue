@@ -26,6 +26,8 @@ router.beforeEach((to, from, next) => {
 <style scoped>
 .app-container {
   display: flex;
+  justify-content: center;
+  align-items: center;
   height: 100vh;
   width: 100vw;
 }
@@ -33,6 +35,7 @@ router.beforeEach((to, from, next) => {
 .app-content {
   display: flex;
   justify-content: center;
+  align-items: center;
   width: 100%;
   height: 100%;
 }

@@ -8,7 +8,7 @@ import Button from 'primevue/button'
 
 const username = ref('')
 const password = ref('')
-const repeatPassword = ref('')
+const confirmPassword = ref('')
 const router = useRouter()
 
 const register = async () => {
@@ -16,7 +16,7 @@ const register = async () => {
     await axios.post('http://localhost:3000/auth/register', {
       username: username.value,
       password: password.value,
-      repeatPassword: repeatPassword.value
+      confirmPassword: confirmPassword.value
     })
     router.push('/login')
   } catch (error) {
@@ -37,9 +37,9 @@ const register = async () => {
         </div>
         <div class="p-field">
           <Password
-            id="repeatPassword"
-            v-model="password"
-            placeholder="Repeat password"
+            id="confirmPassword"
+            v-model="confirmPassword"
+            placeholder="Confirm password"
             required
             toggleMask
           />

@@ -19,7 +19,6 @@ onUnmounted(() => {
 })
 
 const handleMessageResponse = (data: any) => {
-  console.log('Received message:', data)
   itemStore.createItem({ label: data.label, author: data.author })
 }
 

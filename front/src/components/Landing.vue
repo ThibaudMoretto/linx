@@ -31,7 +31,7 @@ const handleLobby = () => {
   <div class="landing-container">
     <header class="header">
       <h1>Welcome to Linx!</h1>
-      <ConnectionState />
+      <!-- <ConnectionState /> -->
     </header>
 
     <main class="main-content">
